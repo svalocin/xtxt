@@ -1,0 +1,28 @@
+name: Go
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "10 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Run
+        run: go run main.go
+
+      - name: Push
+        shell: bash
+        run: |
+          chmod +x "${GITHUB_WORKSPACE}/.github/push.sh"
+          ${GITHUB_WORKSPACE}/.github/push.sh '${{ secrets.GITHUB_TOKEN }}'
