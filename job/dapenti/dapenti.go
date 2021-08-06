@@ -11,6 +11,7 @@ import (
 )
 
 func Run(out string) error {
+	// 判断输出目录是否存在
 	if _, err := os.Stat(out); err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -138,12 +139,17 @@ func readRss(rssPath string) (*DapentiRss, error) {
 }
 
 func writeRss(rss *DapentiRss, rsspath string) error {
+	// 不保存超过 10 条，以免文件太大
+	if len(rss.Channel.Items) > 10 {
+		rss.Channel.Items = rss.Channel.Items[:10]
+	}
+
 	txt, err := xml.Marshal(rss)
 	if err != nil {
 		return err
 	}
 
-	if err := ioutil.WriteFile(rsspath, txt, 0777); err != nil {
+	if err := ioutil.WriteFile(rsspath, txt, os.ModePerm); err != nil {
 		return err
 	}
 
