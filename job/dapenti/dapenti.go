@@ -24,7 +24,7 @@ func Run(out string) error {
 
 	rssPath := path.Join(out, "dapenti.xml")
 
-	newRss, err := downloadRss()
+	newRss, err := downloadRss("https://www.dapenti.com/blog/rss2.asp")
 	if err != nil {
 		return err
 	}
@@ -40,9 +40,10 @@ func Run(out string) error {
 	}
 	newRss.Channel.Items = rssItem
 
-	oldRss, err := readRss(rssPath)
+	oldRss, err := downloadRss("https://raw.githubusercontent.com/slyerr/xtxt/publish/dapenti.xml")
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return writeRss(newRss, rssPath)
 	}
 	if oldRss == nil {
 		return writeRss(newRss, rssPath)
@@ -104,8 +105,8 @@ func toRss(txt []byte) (*DapentiRss, error) {
 	return rss, nil
 }
 
-func downloadRss() (*DapentiRss, error) {
-	rep, err := http.Get("https://www.dapenti.com/blog/rss2.asp")
+func downloadRss(url string) (*DapentiRss, error) {
+	rep, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -115,27 +116,10 @@ func downloadRss() (*DapentiRss, error) {
 	}
 
 	if rep.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("下载喷嚏网 RSS 失败，错误：%v", string(body))
+		return nil, fmt.Errorf("下载 %v 失败，错误：%v", url, string(body))
 	}
 
 	return toRss(body)
-}
-
-func readRss(rssPath string) (*DapentiRss, error) {
-	if _, err := os.Stat(rssPath); err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		} else {
-			return nil, err
-		}
-	}
-
-	txt, err := ioutil.ReadFile(rssPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return toRss(txt)
 }
 
 func writeRss(rss *DapentiRss, rsspath string) error {
