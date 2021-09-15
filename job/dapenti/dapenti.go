@@ -40,7 +40,7 @@ func Run(out string) error {
 	}
 	newRss.Channel.Items = rssItem
 
-	oldRss, err := downloadRss("https://raw.githubusercontent.com/slyerr/xtxt/publish/dapenti.xml")
+	oldRss, err := downloadRss("https://xtxt.netlify.app/dapenti.xml")
 	if err != nil {
 		fmt.Println(err)
 		return writeRss(newRss, rssPath)
